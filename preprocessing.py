@@ -7,10 +7,11 @@ from discord import Guild
 def _emoji_pattern():
 	import emoji
 
-	emoji_unicode = emoji.unicode_codes.EMOJI_UNICODE["en"]
+	emoji_unicode = emoji.unicode_codes.EMOJI_DATA
 	# Sort emojis by length to make sure multi-character emojis are
 	# matched first
-	emojis = sorted(emoji_unicode.values(), key=len, reverse=True)
+	emojis = sorted(emoji_unicode.keys(), key=len, reverse=True)
+	# emojis = sorted([emoji['en'] for emoji in emoji_unicode.values()], key=len, reverse=True)
 	return '|'.join(re.escape(u) for u in emojis)
 
 
