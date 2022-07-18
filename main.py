@@ -178,7 +178,7 @@ async def cloud(ctx, *args):
 			_emoji_resolver
 		)
 
-		await ctx.channel.send(
+		await ctx.reply(
 			content=f"Here Cunt:", allowed_mentions=discord.AllowedMentions.none(),
 			file=discord.File(fp=image, filename=f"cunt_word_cloud.png")
 		)
