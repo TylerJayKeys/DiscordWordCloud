@@ -1,6 +1,7 @@
 from collections import defaultdict
 from typing import Iterable, Hashable, Tuple
 import numpy as np
+import numpy.typing as npt
 from preprocessing import tokenize
 from wcmodel import WCModel
 
@@ -40,19 +41,35 @@ class WCBaseline(WCModel):
 		# turn voc into the list of tokens, useful in word_cloud
 		self.voc = list(self.voc.keys())
 
-	def word_cloud(self, source: Hashable, k=200) -> Iterable[Tuple[str, float]]:
+	def word_cloud(self, sources: list[Hashable], k=200) -> Iterable[Tuple[str, float]]:
 		"""
 		Returns a word cloud for source
-		:param source: the source to generate a word cloud for
+		:param sources: a list of sources to generate a word cloud for
 		:param k: limit the output to top k
 		:return: [(text, strength), ...] a summary of the source's messages
 		"""
-		if source not in self.users:
+
+		user_count: npt.NDArray
+
+		# compute vocab distribution of sources
+		for source in sources:
+			if source not in self.users:
+				continue
+
+			source_count = self.mat[self.users[source], :]
+
+			# ugly check for initialization
+			if not 'user_count' in locals():
+				user_count = np.zeros_like(source_count)
+
+			user_count = np.add(user_count, source_count)
+
+
+		if not 'user_count' in locals():
 			return []
+
 		# k cannot be bigger than the vocabulary
 		k = min(k, len(self.voc))
-		# compute vocab distribution of source
-		user_count = self.mat[self.users[source], :]
 		mask = user_count == self.alpha
 		user_vocab = user_count/user_count.sum()
 		# compute global vocab distribution

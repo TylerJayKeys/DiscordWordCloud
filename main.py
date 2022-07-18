@@ -15,6 +15,7 @@ from Image.emoji_loader import EmojiResolver
 from Models.baseline import WCBaseline as WCModel
 from preprocessing import resolve_tags, get_emojis
 intents = discord.Intents.default()
+intents.message_content = True
 intents.members = True
 intents.emojis = True
 bot = Bot(command_prefix=";", intents=intents)
@@ -164,23 +165,23 @@ async def cloud(ctx, *args):
 	if not members:
 		members.add(ctx.message.author)
 	async with ctx.channel.typing():
-		for member in members:
-			wc = _models[server].word_cloud(member.id)
-			if not wc:
-				await ctx.channel.send(
-					content=f"Sorry I don't have any data on {member.mention} ...",
-					allowed_mentions=discord.AllowedMentions.none()
-				)
-				continue
-			image = await make_image.wc_image(
-				resolve_tags(server, wc),
-				_emoji_resolver
-			)
-
+		# the ids are stitched together in a lambda because fuck readability >:)
+		wc = _models[server].word_cloud([member.id for member in members])
+		if not wc:
 			await ctx.channel.send(
-				content=f"{member.mention}'s Word Cloud:", allowed_mentions=discord.AllowedMentions.none(),
-				file=discord.File(fp=image, filename=f"{member.display_name}_word_cloud.png")
+				content=f"Sorry I don't have any data on any of these users ...",
+				allowed_mentions=discord.AllowedMentions.none()
 			)
+			return
+		image = await make_image.wc_image(
+			resolve_tags(server, wc),
+			_emoji_resolver
+		)
+
+		await ctx.channel.send(
+			content=f"Here Cunt:", allowed_mentions=discord.AllowedMentions.none(),
+			file=discord.File(fp=image, filename=f"cunt_word_cloud.png")
+		)
 
 
 @cloud.error
@@ -252,7 +253,6 @@ async def emojis_error(ctx, error):
 @bot.command(name="info")
 async def info(ctx):
 	await ctx.channel.send(f"Author: Inspi#8989\nCode: https://github.com/Inspirateur/DiscordWordCloud")
-
 
 try:
 	with open("token.txt", "r") as ftoken:
